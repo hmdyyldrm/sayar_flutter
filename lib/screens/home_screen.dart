@@ -7,11 +7,11 @@ import 'package:share_plus/share_plus.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isDarkMode;
-  final Function(bool) onThemeChanged;
+  //final Function(bool) onThemeChanged;
   const HomeScreen({
     super.key,
     required this.isDarkMode,
-    required this.onThemeChanged,
+   // required this.onThemeChanged,
   });
 
   @override
@@ -150,7 +150,8 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: Icon(widget.isDarkMode ? Icons.wb_sunny : Icons.nightlight),
             onPressed: () =>
-                widget.onThemeChanged(!widget.isDarkMode),
+               // widget.onThemeChanged(!widget.isDarkMode)
+               print("sdf")
           ),
           PopupMenuButton<String>(
             onSelected: (value) {

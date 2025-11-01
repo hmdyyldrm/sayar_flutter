@@ -1,10 +1,4 @@
-// lib/screens/main_page.dart
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'dua_ve_zikir_screen.dart';
-import 'ayarlar_screen.dart';
-import 'kayitlar_screen.dart';
-import 'yeni_zikir_screen.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -13,53 +7,60 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Zikir Uygulaması'),
+        title: const Text("Sayar"),
         centerTitle: true,
+        backgroundColor: Colors.teal.shade700,
+        foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.white, Color(0xFFE0F2F1)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         padding: const EdgeInsets.all(24.0),
         child: GridView.count(
           crossAxisCount: 2,
-          crossAxisSpacing: 16,
           mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
           children: [
             _buildMenuButton(
               context,
-              title: 'Zikirmatik',
+              title: "Zikirmatik",
               icon: Icons.countertops,
-              color: Colors.teal,
-              page: const HomeScreen(
-                isDarkMode: false,
-                onThemeChanged: _dummyThemeChange,
-              ),
+              route: "/zikirmatik",
             ),
             _buildMenuButton(
               context,
-              title: 'Dua ve Zikirler',
-              icon: Icons.book,
-              color: Colors.deepPurple,
-              page: const DuaVeZikirScreen(),
+              title: "Günlük Hedefler",
+              icon: Icons.flag,
+              route: "/gunluk",
             ),
             _buildMenuButton(
               context,
-              title: 'Yeni Zikir',
-              icon: Icons.add_circle_outline,
-              color: Colors.green,
-              page: const YeniZikirScreen(),
+              title: "Dua ve Zikirler",
+              icon: Icons.menu_book,
+              route: "/dua",
             ),
             _buildMenuButton(
               context,
-              title: 'Kayıtlar',
-              icon: Icons.history,
-              color: Colors.blueGrey,
-              page: const KayitlarScreen(),
+              title: "Esmaül Hüsna",
+              icon: Icons.star,
+              route: "/esma",
             ),
             _buildMenuButton(
               context,
-              title: 'Ayarlar',
+              title: "Ayarlar",
               icon: Icons.settings,
-              color: Colors.orange,
-              page: const AyarlarScreen(),
+              route: "/ayarlar",
+            ),
+            _buildMenuButton(
+              context,
+              title: "Hakkında",
+              icon: Icons.info_outline,
+              route: "/hakkinda",
             ),
           ],
         ),
@@ -67,42 +68,28 @@ class MainPage extends StatelessWidget {
     );
   }
 
-  static void _dummyThemeChange(bool _) {}
-
-  Widget _buildMenuButton(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    required Color color,
-    required Widget page,
-  }) {
-    return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => page),
+  Widget _buildMenuButton(BuildContext context,
+      {required String title, required IconData icon, required String route}) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.teal.shade600,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        padding: const EdgeInsets.all(12),
+        elevation: 4,
       ),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color, width: 1.5),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 48),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: TextStyle(
-                color: color,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
+      onPressed: () => Navigator.pushNamed(context, route),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 40),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ],
       ),
     );
   }

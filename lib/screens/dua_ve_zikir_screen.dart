@@ -1,6 +1,6 @@
-// lib/screens/dua_ve_zikir_screen.dart
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:sayarapp/database/database_helper.dart';
+import 'package:sayarapp/screens/zikir_detay_screen.dart';
 
 class DuaVeZikirScreen extends StatefulWidget {
   const DuaVeZikirScreen({super.key});
@@ -10,89 +10,93 @@ class DuaVeZikirScreen extends StatefulWidget {
 }
 
 class _DuaVeZikirScreenState extends State<DuaVeZikirScreen> {
-  // Bu listeyi istersen shared_preferences veya local json ile doldurabiliriz.
-  final List<Map<String, String>> duaList = [
-    {
-      'baslik': 'Sabah Duası',
-      'icerik': 'Allahümme inni es’elüke ilmen nafian ve rızkan tayyiban...'
-    },
-    {
-      'baslik': 'Akşam Duası',
-      'icerik': 'Allahümme bismike ehya ve bismike emut...'
-    },
-    {
-      'baslik': 'Seyahat Duası',
-      'icerik': 'Sübhanellezi sehhara lena hâza...'
-    },
-    {
-      'baslik': 'Namaz Sonrası Zikir',
-      'icerik': 'Estağfirullah (3x), Allahümme entesselam...'
-    },
-  ];
+  final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> tumKayitlar = [];
+  List<Map<String, dynamic>> filtreliKayitlar = [];
+  bool yukleniyor = true;
 
-  void _showDetail(Map<String, String> dua) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              dua['baslik']!,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              dua['icerik']!,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.share),
-                label: const Text('Paylaş'),
-                onPressed: () {
-                  Share.share('${dua['baslik']}\n\n${dua['icerik']}');
-                },
-              ),
-            )
-          ],
-        ),
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    _veriYukle();
+  }
+
+  Future<void> _veriYukle() async {
+    final db = await DatabaseHelper.instance.database;
+    final veriler = await db.query('dua_ve_zikirler');
+    setState(() {
+      tumKayitlar = veriler;
+      filtreliKayitlar = veriler;
+      yukleniyor = false;
+    });
+  }
+
+  void _ara(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filtreliKayitlar = tumKayitlar;
+      } else {
+        filtreliKayitlar = tumKayitlar
+            .where((item) =>
+                item['baslik'].toString().toLowerCase().contains(query.toLowerCase()) ||
+                item['icerik'].toString().toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dua ve Zikirler'),
-        centerTitle: true,
-      ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: duaList.length,
-        separatorBuilder: (_, __) => const Divider(),
-        itemBuilder: (context, index) {
-          final dua = duaList[index];
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            title: Text(
-              dua['baslik']!,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+      appBar: AppBar(title: const Text("Dua ve Zikirler")),
+      body: yukleniyor
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: "Ara...",
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onChanged: _ara,
+                  ),
+                ),
+                Expanded(
+                  child: filtreliKayitlar.isEmpty
+                      ? const Center(child: Text("Kayıt bulunamadı"))
+                      : ListView.builder(
+                          itemCount: filtreliKayitlar.length,
+                          itemBuilder: (context, index) {
+                            final kayit = filtreliKayitlar[index];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              child: ListTile(
+                                title: Text(kayit['baslik'] ?? ""),
+                                subtitle: Text(
+                                  kayit['icerik'].toString().length > 60
+                                      ? "${kayit['icerik'].toString().substring(0, 60)}..."
+                                      : kayit['icerik'],
+                                ),
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ZikirDetayScreen(
+                                      title: kayit['baslik'],
+                                      content: kayit['icerik'],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 18),
-            onTap: () => _showDetail(dua),
-          );
-        },
-      ),
     );
   }
 }

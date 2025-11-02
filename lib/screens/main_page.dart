@@ -5,91 +5,43 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Sayar"),
-        centerTitle: true,
-        backgroundColor: Colors.teal.shade700,
-        foregroundColor: Colors.white,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Color(0xFFE0F2F1)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        padding: const EdgeInsets.all(24.0),
+      appBar: AppBar(title: const Text('Sayar'), centerTitle: true),
+      body: Padding(
+        padding: const EdgeInsets.all(18.0),
         child: GridView.count(
           crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 14,
           children: [
-            _buildMenuButton(
-              context,
-              title: "Zikirmatik",
-              icon: Icons.countertops,
-              route: "/zikirmatik",
-            ),
-            _buildMenuButton(
-              context,
-              title: "Günlük Hedefler",
-              icon: Icons.flag,
-              route: "/gunluk",
-            ),
-            _buildMenuButton(
-              context,
-              title: "Dua ve Zikirler",
-              icon: Icons.menu_book,
-              route: "/dua",
-            ),
-            _buildMenuButton(
-              context,
-              title: "Esmaül Hüsna",
-              icon: Icons.star,
-              route: "/esma",
-            ),
-            _buildMenuButton(
-              context,
-              title: "Ayarlar",
-              icon: Icons.settings,
-              route: "/ayarlar",
-            ),
-            _buildMenuButton(
-              context,
-              title: "Hakkında",
-              icon: Icons.info_outline,
-              route: "/hakkinda",
-            ),
+            _tile(context, Icons.countertops, 'Zikirmatik', '/zikirmatik'),
+            _tile(context, Icons.flag, 'Günlük Hedefler', '/gunluk'),
+            _tile(context, Icons.menu_book, 'Dua & Zikirler', '/duavezikir'),
+            _tile(context, Icons.star, 'Esmaül Hüsna', '/esma'),
+            _tile(context, Icons.settings, 'Ayarlar', '/ayarlar'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMenuButton(BuildContext context,
-      {required String title, required IconData icon, required String route}) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.teal.shade600,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        padding: const EdgeInsets.all(12),
-        elevation: 4,
-      ),
-      onPressed: () => Navigator.pushNamed(context, route),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 40),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-        ],
+  Widget _tile(BuildContext context, IconData icon, String title, String route) {
+    final color = Theme.of(context).colorScheme.primary;
+    return Material(
+      borderRadius: BorderRadius.circular(14),
+      color: color.withOpacity(0.08),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => Navigator.pushNamed(context, route),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(icon, size: 44, color: color),
+            const SizedBox(height: 12),
+            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          ]),
+        ),
       ),
     );
   }

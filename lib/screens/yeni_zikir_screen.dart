@@ -1,5 +1,5 @@
-// lib/screens/yeni_zikir_screen.dart
 import 'package:flutter/material.dart';
+import '../services/db_helper.dart';
 
 class YeniZikirScreen extends StatefulWidget {
   const YeniZikirScreen({super.key});
@@ -9,100 +9,38 @@ class YeniZikirScreen extends StatefulWidget {
 }
 
 class _YeniZikirScreenState extends State<YeniZikirScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _adController = TextEditingController();
-  final TextEditingController _hedefController = TextEditingController();
+  final _titleCtrl = TextEditingController();
+  final _contentCtrl = TextEditingController();
 
-  void _kaydetZikir() {
-    if (_formKey.currentState!.validate()) {
-      final yeniZikir = {
-        'ad': _adController.text.trim(),
-        'hedef': int.tryParse(_hedefController.text.trim()) ?? 0,
-        'tarih': DateTime.now(),
-      };
+  Future<void> _save() async {
+    final title = _titleCtrl.text.trim();
+    final content = _contentCtrl.text.trim();
+    if (title.isEmpty || content.isEmpty) return;
+    await DBHelper.insert('zikirler', {'baslik': title, 'icerik': content});
+    if (!mounted) return;
+    Navigator.pop(context);
+  }
 
-      // Gelecekte burada SharedPreferences veya SQLite eklenebilir
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '"${yeniZikir['ad']}" zikri kaydedildi.',
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.teal,
-        ),
-      );
-
-      _adController.clear();
-      _hedefController.clear();
-    }
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _contentCtrl.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Yeni Zikir Oluştur'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Yeni Dua / Zikir')),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _adController,
-                decoration: const InputDecoration(
-                  labelText: 'Zikir Adı',
-                  hintText: 'Örn: Subhanallah',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Lütfen zikir adını girin';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _hedefController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Hedef Sayı (isteğe bağlı)',
-                  hintText: 'Örn: 33',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: ElevatedButton.icon(
-                  onPressed: _kaydetZikir,
-                  icon: const Icon(Icons.save),
-                  label: const Text('Kaydet'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 14),
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(children: [
+          TextField(controller: _titleCtrl, decoration: const InputDecoration(labelText: 'Başlık')),
+          const SizedBox(height: 12),
+          Expanded(child: TextField(controller: _contentCtrl, decoration: const InputDecoration(labelText: 'İçerik'), maxLines: null, expands: true)),
+          ElevatedButton.icon(onPressed: _save, icon: const Icon(Icons.save), label: const Text('Kaydet')),
+        ]),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _adController.dispose();
-    _hedefController.dispose();
-    super.dispose();
   }
 }

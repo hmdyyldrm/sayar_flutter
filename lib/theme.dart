@@ -27,11 +27,13 @@ class AppTheme {
       foregroundColor: lightColorScheme.onPrimary,
       centerTitle: true,
     ),
-    cardTheme: CardTheme(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-    ),
+   cardTheme: const CardThemeData(
+  color: Colors.white,
+  elevation: 4,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.all(Radius.circular(16)),
+  ),
+),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
     ),

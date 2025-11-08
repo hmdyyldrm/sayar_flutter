@@ -1,4 +1,4 @@
-package com.example.sayarapp
+package com.sayar.rana.sayar
 
 import io.flutter.embedding.android.FlutterActivity
 

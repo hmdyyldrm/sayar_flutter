@@ -1,180 +1,109 @@
+// lib/screens/zikirmatik_screen.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vibration/vibration.dart';
-import 'package:audioplayers/audioplayers.dart';
+import '../widgets/modern_counter.dart';
 
 class ZikirmatikScreen extends StatefulWidget {
-  const ZikirmatikScreen({super.key});
+  final String? title;
+  final int? initialTarget;
+  final int? initialCount;
+  final int? goalIndex; // if opened for a specific goal index, save back to metin{i}/sayac{i}/hedef{i}
+
+  const ZikirmatikScreen({super.key, this.title, this.initialTarget, this.initialCount, this.goalIndex});
 
   @override
   State<ZikirmatikScreen> createState() => _ZikirmatikScreenState();
 }
 
 class _ZikirmatikScreenState extends State<ZikirmatikScreen> {
-  int sayac = 0;
-  int hedef = 33;
-  bool sesEtkin = true;
-  bool titresimEtkin = true;
-  late SharedPreferences prefs;
-  final player = AudioPlayer();
+  late int count;
+  late int target;
+  String titleText = '';
 
   @override
   void initState() {
     super.initState();
-    _verileriYukle();
+    count = widget.initialCount ?? 0;
+    target = widget.initialTarget ?? 33;
+    titleText = widget.title ?? 'Zikirmatik';
   }
 
-  Future<void> _verileriYukle() async {
-    prefs = await SharedPreferences.getInstance();
-    setState(() {
-      sayac = prefs.getInt('zikir_sayac') ?? 0;
-      hedef = prefs.getInt('zikir_hedef') ?? 33;
-      sesEtkin = prefs.getBool('sesEtkin') ?? true;
-      titresimEtkin = prefs.getBool('titresimEtkin') ?? true;
-    });
-  }
-
-  Future<void> _verileriKaydet() async {
-    await prefs.setInt('zikir_sayac', sayac);
-    await prefs.setInt('zikir_hedef', hedef);
-    await prefs.setBool('sesEtkin', sesEtkin);
-    await prefs.setBool('titresimEtkin', titresimEtkin);
-  }
-
-  void _arttir() {
-    if (sayac < hedef) {
-      setState(() => sayac++);
-      if (sesEtkin) player.play(AssetSource('sounds/click.mp3'));
-      if (titresimEtkin) Vibration.vibrate(duration: 60);
-      _verileriKaydet();
+  Future<void> _increment() async {
+    if (count < target) {
+      setState(() => count++);
+      await _maybeSaveBack();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Hedef tamamlandı 🌙")),
-      );
+      // already reached target - still allow!
+      setState(() => count++);
+      await _maybeSaveBack();
     }
   }
 
-  void _sifirla() {
-    setState(() => sayac = 0);
-    _verileriKaydet();
+  Future<void> _reset() async {
+    setState(() => count = 0);
+    await _maybeSaveBack();
   }
 
-  void _hedefDegistir(BuildContext context) {
-    final controller = TextEditingController(text: hedef.toString());
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Yeni hedef belirle"),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(hintText: "Yeni hedef sayısı"),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("İptal")),
-          ElevatedButton(
-            onPressed: () {
-              setState(() => hedef = int.tryParse(controller.text) ?? 33);
-              _verileriKaydet();
-              Navigator.pop(context);
-            },
-            child: const Text("Kaydet"),
-          )
-        ],
-      ),
-    );
-  }
-
-  void _ayarlarMenusu() {
-    showModalBottomSheet(
-      context: context,
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SwitchListTile(
-              title: const Text("Ses efekti"),
-              value: sesEtkin,
-              onChanged: (v) {
-                setState(() => sesEtkin = v);
-                _verileriKaydet();
-              },
-            ),
-            SwitchListTile(
-              title: const Text("Titreşim"),
-              value: titresimEtkin,
-              onChanged: (v) {
-                setState(() => titresimEtkin = v);
-                _verileriKaydet();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    player.dispose();
-    super.dispose();
+  Future<void> _maybeSaveBack() async {
+    if (widget.goalIndex != null) {
+      final prefs = await SharedPreferences.getInstance();
+      final i = widget.goalIndex!;
+      await prefs.setInt('sayac$i', count);
+      // hedef ve metin zaten mevcut, güncelle gerekirse de yapılır
+    }
+    // If it's a custom zikir stored by key, user should use specialized screen; here we just support goals back-save
   }
 
   @override
   Widget build(BuildContext context) {
-    final oran = (sayac / hedef).clamp(0, 1.0);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Zikirmatik"),
-        actions: [
-          IconButton(icon: const Icon(Icons.settings), onPressed: _ayarlarMenusu),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text("Hedef: $hedef", style: const TextStyle(fontSize: 22)),
-            const SizedBox(height: 10),
-            Text("Sayaç: $sayac", style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: 180,
-              height: 180,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: oran,
-                    strokeWidth: 10,
-                    backgroundColor: Colors.grey[300],
-                    valueColor: AlwaysStoppedAnimation(oran == 1.0 ? Colors.green : Colors.teal),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.fingerprint, size: 70, color: Colors.teal),
-                    onPressed: _arttir,
-                  ),
-                ],
+      appBar: AppBar(title: Text(titleText)),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 18),
+          child: Column(
+            children: [
+              ModernCounter(
+                title: titleText,
+                count: count,
+                target: target,
+                onTap: _increment,
+                onReset: _reset,
               ),
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 16,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _sifirla,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text("Sıfırla"),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () => _hedefDegistir(context),
-                  icon: const Icon(Icons.edit),
-                  label: const Text("Hedef"),
-                ),
-              ],
-            ),
-          ],
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () {
+                  // open a dialog to change target
+                  final ctrl = TextEditingController(text: target.toString());
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text('Hedefi Değiştir'),
+                      content: TextField(controller: ctrl, keyboardType: TextInputType.number),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(context), child: const Text('İptal')),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final v = int.tryParse(ctrl.text) ?? target;
+                            setState(() => target = v);
+                            if (widget.goalIndex != null) {
+                              final i = widget.goalIndex!;
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.setInt('hedef$i', target);
+                            }
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Kaydet'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.flag),
+                label: const Text('Hedefi Düzenle'),
+              ),
+            ],
+          ),
         ),
       ),
     );

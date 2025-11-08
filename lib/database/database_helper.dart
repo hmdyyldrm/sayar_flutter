@@ -1,5 +1,7 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'dart:io';
+import 'package:path/path.dart' as p;
+
 
 class DatabaseHelper {
   static const _databaseName = 'database_zikirler.db';
@@ -25,9 +27,9 @@ class DatabaseHelper {
   static Database? _database;
   Future<Database> get database async => _database ??= await _initDatabase();
 
-  Future<Database> _initDatabase() async {
+   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, _databaseName);
+    final path = p.join(dbPath, _databaseName);
     return await openDatabase(
       path,
       version: _databaseVersion,
@@ -83,4 +85,38 @@ class DatabaseHelper {
       whereArgs: [id],
     );
   }
+
+  Future<void> migrateOldDatabase() async {
+    try {
+      final dbPath = await getDatabasesPath();
+      final newDbPath = p.join(dbPath, _databaseName);
+
+      final oldPaths = [
+        '/data/data/com.sayar.rana.sayar/databases/sayar.db',
+        '/data/user/0/com.sayar.rana.sayar/databases/sayar.db',
+      ];
+
+      for (final oldPath in oldPaths) {
+        final oldDb = File(oldPath);
+        if (await oldDb.exists()) {
+          print('🟢 Old database found: $oldPath');
+
+          final newDb = File(newDbPath);
+          if (!await newDb.exists()) {
+            // Ensure parent dir exists (sqflite db dir should exist, but be safe)
+            await newDb.parent.create(recursive: true);
+            await oldDb.copy(newDbPath);
+            print('✅ Database moved to new location: $newDbPath');
+          } else {
+            print('ℹ️ New database already exists, skipping move.');
+          }
+          break;
+        }
+      }
+    } catch (e) {
+      print('⚠️ migrateOldDatabase error: $e');
+    }
+  }
 }
+
+

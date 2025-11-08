@@ -1,50 +1,49 @@
+// lib/theme.dart
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const primary = Color(0xFF1E88E5); // blue
-  static const primaryContainer = Color(0xFFDFF1FF);
-  static const secondary = Color(0xFF90CAF9);
-  static const accent = Color(0xFF0D47A1);
+  static const Color primary = Color(0xFF1E88E5);
+  static const Color primaryContainer = Color(0xFFDFF1FF);
+  static const Color secondary = Color(0xFF90CAF9);
+  static const Color accent = Color(0xFF0D47A1);
 }
 
 class AppTheme {
-  static final lightColorScheme = ColorScheme.fromSeed(
+  static final ColorScheme lightScheme = ColorScheme.fromSeed(
     seedColor: AppColors.primary,
     brightness: Brightness.light,
   );
 
-  static final darkColorScheme = ColorScheme.fromSeed(
+  static final ColorScheme darkScheme = ColorScheme.fromSeed(
     seedColor: AppColors.primary,
     brightness: Brightness.dark,
   );
 
-  static final lightTheme = ThemeData(
-    colorScheme: lightColorScheme,
+  static final ThemeData lightTheme = ThemeData(
+    colorScheme: lightScheme,
     useMaterial3: true,
-    visualDensity: VisualDensity.adaptivePlatformDensity,
     appBarTheme: AppBarTheme(
-      backgroundColor: lightColorScheme.primary,
-      foregroundColor: lightColorScheme.onPrimary,
+      backgroundColor: lightScheme.primary,
+      foregroundColor: lightScheme.onPrimary,
       centerTitle: true,
     ),
-   cardTheme: const CardThemeData(
-  color: Colors.white,
+    cardTheme: const CardThemeData(
   elevation: 4,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.all(Radius.circular(16)),
-  ),
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14))),
 ),
     elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     ),
   );
 
-  static final darkTheme = ThemeData(
-    colorScheme: darkColorScheme,
+  static final ThemeData darkTheme = ThemeData(
+    colorScheme: darkScheme,
     useMaterial3: true,
     appBarTheme: AppBarTheme(
-      backgroundColor: darkColorScheme.primary,
-      foregroundColor: darkColorScheme.onPrimary,
+      backgroundColor: darkScheme.primary,
+      foregroundColor: darkScheme.onPrimary,
       centerTitle: true,
     ),
   );

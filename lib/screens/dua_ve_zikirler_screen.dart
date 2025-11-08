@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/db_helper.dart';
+import 'package:sayarapp/database/database_helper.dart';
 import '../widgets/zikir_card.dart';
 import 'zikir_screen.dart';
 
@@ -22,7 +22,7 @@ class _DuaVeZikirlerScreenState extends State<DuaVeZikirlerScreen> {
   }
 
   Future<void> _load() async {
-    final rows = await DBHelper.queryAll('zikirler');
+    final rows = await DatabaseHelper.instance.getAllZikirler();
     setState(() {
       items = rows;
       loading = false;
@@ -72,7 +72,7 @@ class _DuaVeZikirlerScreenState extends State<DuaVeZikirlerScreen> {
                             background: Container(color: Colors.redAccent, alignment: Alignment.centerRight, padding: const EdgeInsets.only(right: 16), child: const Icon(Icons.delete, color: Colors.white)),
                             direction: DismissDirection.endToStart,
                             onDismissed: (_) async {
-                              await DBHelper.delete('zikirler', it['id'] as int);
+                              await DatabaseHelper.instance.deleteZikir(it['id'] as int);
                               _load();
                             },
                             child: ZikirCard(

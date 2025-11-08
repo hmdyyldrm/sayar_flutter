@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/db_helper.dart';
+import 'package:sayarapp/database/database_helper.dart';
 
 class YeniZikirScreen extends StatefulWidget {
   const YeniZikirScreen({super.key});
@@ -16,7 +16,7 @@ class _YeniZikirScreenState extends State<YeniZikirScreen> {
     final title = _titleCtrl.text.trim();
     final content = _contentCtrl.text.trim();
     if (title.isEmpty || content.isEmpty) return;
-    await DBHelper.insert('zikirler', {'baslik': title, 'icerik': content});
+    await DatabaseHelper.instance.insertZikir({'baslik': title, 'icerik': content});
     if (!mounted) return;
     Navigator.pop(context);
   }

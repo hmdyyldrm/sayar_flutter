@@ -13,9 +13,7 @@ import 'screens/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Eski database'i kontrol edip taşı
   await DatabaseHelper.instance.migrateOldDatabase();
-  WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final bool gece = prefs.getBool('geceModu') ?? false;
   final ThemeMode initialMode = gece ? ThemeMode.dark : ThemeMode.light;
